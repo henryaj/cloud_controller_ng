@@ -41,6 +41,21 @@ module VCAP::CloudController
       self.buildpack_url
     end
 
+    def buildpacks
+      packs = VCAP::CloudController::LifecycleBuildpack.where(buildpack_lifecycle_data_guid: self.guid).all
+      packs.map(&:admin_buildpack_name)
+    end
+
+    def buildpacks=(buildpacks)
+      buildpacks.each_with_index do |buildpack_name, index|
+        VCAP::CloudController::LifecycleBuildpack.create(
+          buildpack_lifecycle_data_guid: self.guid,
+          admin_buildpack_name: buildpack_name,
+          position: index
+        )
+      end
+    end
+
     def buildpack_model
       return AutoDetectionBuildpack.new if buildpack.nil?
 
@@ -55,7 +70,7 @@ module VCAP::CloudController
     end
 
     def to_hash
-      { buildpacks: buildpack ? [CloudController::UrlSecretObfuscator.obfuscate(buildpack)] : [], stack: stack }
+      { buildpacks: buildpacks ? buildpacks.map{|pack| CloudController::UrlSecretObfuscator.obfuscate(pack)} : [], stack: stack }
     end
 
     def validate
@@ -64,4 +79,14 @@ module VCAP::CloudController
       end
     end
   end
+
+  class LifecycleBuildpack < Sequel::Model(:lifecycle_buildpacks)
+    many_to_one :buildpack_lifecycle_data,
+      class:                   '::VCAP::CloudController::BuildpackLifecycleDataModel',
+      key:                     :buildpack_lifecycle_data_guid,
+      primary_key:             :guid,
+      without_guid_generation: true
+  end
 end
+
+

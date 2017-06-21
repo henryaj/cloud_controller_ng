@@ -16,10 +16,11 @@ module VCAP::CloudController
 
     def create_lifecycle_data_model(app)
       BuildpackLifecycleDataModel.create(
-        buildpack: buildpack,
-        stack:     stack,
-        app:       app
-      )
+        stack:      stack,
+        app:        app
+      ).tap do |lifecycle_data_model|
+        lifecycle_data_model.update(buildpacks: message.buildpack_data.buildpacks)
+      end
     end
 
     def update_lifecycle_data_model(app)

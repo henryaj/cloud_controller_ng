@@ -133,6 +133,20 @@ module VCAP::CloudController
           expect(CloudController::UrlSecretObfuscator).to have_received(:obfuscate).exactly :once
         end
       end
+
+      context 'when there are multiple buildpacks' do
+        let(:buildpack2) { 'python' }
+        let(:expected_lifecycle_data) do
+          { buildpacks: [buildpack, buildpack2], stack: 'cflinuxfs2' }
+        end
+
+        it 'returns the lifecycle data as a hash' do
+          lifecycle_data.buildpacks = [buildpack, buildpack2]
+          lifecycle_data.save
+
+          expect(lifecycle_data.to_hash).to eq expected_lifecycle_data
+        end
+      end
     end
 
     describe 'associations' do
@@ -173,6 +187,38 @@ module VCAP::CloudController
         lifecycle_data.app = app
         expect(lifecycle_data.valid?).to be(false)
         expect(lifecycle_data.errors.full_messages.first).to include('Must be associated with an app OR a build+droplet, but not both')
+      end
+    end
+
+    describe '#buildpacks' do
+      context 'multiple buildpacks' do
+        context 'admin buildpacks' do
+          let(:buildpack) { Buildpack.make(name: 'ruby') }
+          let(:buildpack2) { Buildpack.make(name: 'python') }
+
+          it 'persists multiple buildpacks' do
+            packs = [buildpack.name, buildpack2.name]
+            lcd = lifecycle_data.save
+            lcd.buildpacks = packs
+            lcd.save
+
+            expect(lifecycle_data.reload.buildpacks).to eq(packs)
+          end
+        end
+
+        context 'custom buildpacks' do
+          let(:buildpack) { 'http://example.com/buildpack1' }
+          let(:buildpack2) { 'http://example.com/buildpack2' }
+
+          it 'persists multiple buildpacks' do
+            packs = [buildpack, buildpack2]
+            lcd = lifecycle_data.save
+            lcd.buildpacks = packs
+            lcd.save
+
+            expect(lifecycle_data.reload.buildpacks).to eq(packs)
+          end
+        end
       end
     end
   end

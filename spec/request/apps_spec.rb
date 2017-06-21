@@ -15,6 +15,8 @@ RSpec.describe 'Apps' do
   describe 'POST /v3/apps' do
     it 'creates an app' do
       buildpack      = VCAP::CloudController::Buildpack.make
+      buildpack2     = VCAP::CloudController::Buildpack.make
+
       create_request = {
         name: 'my_app',
         environment_variables: { open: 'source' },
@@ -22,7 +24,7 @@ RSpec.describe 'Apps' do
           type: 'buildpack',
           data: {
             stack: nil,
-            buildpacks: [buildpack.name]
+            buildpacks: [buildpack.name, buildpack2.name]
           }
         },
         relationships: {
@@ -49,7 +51,7 @@ RSpec.describe 'Apps' do
           'lifecycle' => {
             'type' => 'buildpack',
             'data' => {
-              'buildpacks' => [buildpack.name],
+              'buildpacks' => [buildpack.name, buildpack2.name],
               'stack'      => VCAP::CloudController::Stack.default.name,
             }
           },

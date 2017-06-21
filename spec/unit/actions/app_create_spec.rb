@@ -95,6 +95,16 @@ module VCAP::CloudController
           app_create.create(message, lifecycle)
         }.to raise_error(AppCreate::InvalidApp)
       end
+
+      context 'when using multiple buildpacks' do
+        let(:buildpack2) { Buildpack.make }
+        let(:lifecycle_request) { { type: 'buildpack', data: { buildpacks: [buildpack.name, buildpack2.name], stack: 'cflinuxfs2' } } }
+
+        it 'creates an app with multiple buildpacks' do
+          app = app_create.create(message, lifecycle)
+          expect(app.lifecycle_data.buildpacks).to eq([buildpack.name, buildpack2.name])
+        end
+      end
     end
   end
 end

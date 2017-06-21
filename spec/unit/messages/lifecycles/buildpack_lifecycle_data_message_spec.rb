@@ -75,14 +75,12 @@ module VCAP::CloudController
           end
         end
 
-        context 'when more than one buildpack is requested' do
-          let(:params) { { buildpacks: ['foo-buildpack', 'bar'] } }
+        context 'when buildpacks contains multiple entries' do
+          let(:params) { { buildpacks: ['foo-buildpack', 'bar', 'baz'] } }
 
-          it 'is not valid' do
+          it 'is valid' do
             message = BuildpackLifecycleDataMessage.new(params)
-
-            expect(message).not_to be_valid
-            expect(message.errors.full_messages[0]).to include('currently only supports one buildpack')
+            expect(message).to be_valid
           end
         end
 
