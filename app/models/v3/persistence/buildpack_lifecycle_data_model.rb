@@ -25,20 +25,57 @@ module VCAP::CloudController
       primary_key:             :guid,
       without_guid_generation: true
 
+    one_to_many :buildpacks,
+      class:                   '::VCAP::CloudController::AppModel',
+      key:                     :app_guid,
+      primary_key:             :guid,
+      without_guid_generation: true
+
+    alias :admin_buildpack_name, :legacy_admin_buildpack_name
+
     def buildpack=(buildpack)
       self.buildpack_url        = nil
       self.admin_buildpack_name = nil
 
       if UriUtils.is_uri?(buildpack)
-        self.buildpack_url = buildpack
+        self.legacy_buildpack_url = buildpacks.first
       else
-        self.admin_buildpack_name = buildpack
+        self.legacy_admin_buildpack_name = buildpacks.first
       end
+
+      self.buildpacks = buildpacks
     end
 
     def buildpack
+      buildpacks = self.buildpacks
+      return buildpacks if buildpacks
       return self.admin_buildpack_name if self.admin_buildpack_name.present?
       self.buildpack_url
+    end
+
+    alias legacy_buildpack_url buildpack_url
+    alias legacy_buildpack_url= buildpack_url=
+    alias legacy_buildpack_url buildpack_url
+    alias legacy_buildpack_url= buildpack_url=
+
+    def buildpacks=(buildpacks)
+      self.buildpack_url        = nil
+      self.admin_buildpack_name = nil
+
+      if UriUtils.is_uri?(buildpacks.first)
+        self.legacy_buildpack_url = buildpacks.first
+      else
+        self.legacy_admin_buildpack_name = buildpacks.first
+      end
+
+      self.buildpacks = buildpacks
+    end
+
+    def buildpacks
+      buildpacks = self.buildpacks
+      return buildpacks if buildpacks
+      return [self.admin_buildpack_name] if self.admin_buildpack_name.present?
+      [self.buildpack_url]
     end
 
     def buildpack_model
