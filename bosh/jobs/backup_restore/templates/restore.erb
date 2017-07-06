@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -eux
+
+/var/vcap/packages/mariadb/bin/mysql %> \
+  -u <%= p('ccdb.username') %> \
+  -p <%= p('ccdb.password') %> \
+  -P <%= p('ccdb.port') %> \
+  -h <%= p('ccdb.hostname') %> < "${ARTIFACT_DIRECTORY}"ccdb_dump

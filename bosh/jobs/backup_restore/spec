@@ -1,0 +1,28 @@
+---
+name: backup_restore
+
+description: "Backup and restore Cloud Controller"
+
+templates:
+  backup.erb: bin/bbr/backup
+  restore.erb: bin/bbr/restore
+
+packages:
+  - mariadb
+
+consumes:
+- name: database
+  type: database
+  optional: true
+
+properties:
+  ccdb.database:
+    description: "Database to backup"
+  ccdb.password:
+    description: "DB password"
+  ccdb.username:
+    description: "DB user"
+  ccdb.address:
+    description: "The address of the database server"
+  ccdb.port:
+    description: "The port of the database server"
