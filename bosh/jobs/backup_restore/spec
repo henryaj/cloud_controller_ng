@@ -10,11 +10,6 @@ templates:
 packages:
   - mariadb
 
-consumes:
-- name: database
-  type: database
-  optional: true
-
 properties:
   ccdb.database:
     description: "Database to backup"
